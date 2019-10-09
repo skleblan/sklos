@@ -1,0 +1,261 @@
+
+sklos.elf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00008000 <_start>:
+    8000:	e3a0d902 	mov	sp, #32768	; 0x8000
+    8004:	e1a0000f 	mov	r0, pc
+    8008:	eb00009f 	bl	828c <sklmain>
+
+0000800c <hang>:
+    800c:	eafffffe 	b	800c <hang>
+
+00008010 <PUT32>:
+    8010:	e5801000 	str	r1, [r0]
+    8014:	e12fff1e 	bx	lr
+
+00008018 <GET32>:
+    8018:	e5900000 	ldr	r0, [r0]
+    801c:	e12fff1e 	bx	lr
+
+00008020 <dummy>:
+    8020:	e12fff1e 	bx	lr
+
+00008024 <uart_putword>:
+    8024:	e92d4070 	push	{r4, r5, r6, lr}
+    8028:	e1a05000 	mov	r5, r0
+    802c:	e59f4020 	ldr	r4, [pc, #32]	; 8054 <uart_putword+0x30>
+    8030:	e1a00004 	mov	r0, r4
+    8034:	ebfffff7 	bl	8018 <GET32>
+    8038:	e3100020 	tst	r0, #32
+    803c:	0afffffb 	beq	8030 <uart_putword+0xc>
+    8040:	e1a01005 	mov	r1, r5
+    8044:	e59f000c 	ldr	r0, [pc, #12]	; 8058 <uart_putword+0x34>
+    8048:	ebfffff0 	bl	8010 <PUT32>
+    804c:	e8bd4070 	pop	{r4, r5, r6, lr}
+    8050:	e12fff1e 	bx	lr
+    8054:	20215054 	eorcs	r5, r1, r4, asr r0
+    8058:	20215040 	eorcs	r5, r1, r0, asr #32
+
+0000805c <uart_putchar>:
+    805c:	e92d4070 	push	{r4, r5, r6, lr}
+    8060:	e1a05000 	mov	r5, r0
+    8064:	e59f4020 	ldr	r4, [pc, #32]	; 808c <uart_putchar+0x30>
+    8068:	e1a00004 	mov	r0, r4
+    806c:	ebffffe9 	bl	8018 <GET32>
+    8070:	e3100020 	tst	r0, #32
+    8074:	0afffffb 	beq	8068 <uart_putchar+0xc>
+    8078:	e1a01005 	mov	r1, r5
+    807c:	e59f000c 	ldr	r0, [pc, #12]	; 8090 <uart_putchar+0x34>
+    8080:	ebffffe2 	bl	8010 <PUT32>
+    8084:	e8bd4070 	pop	{r4, r5, r6, lr}
+    8088:	e12fff1e 	bx	lr
+    808c:	20215054 	eorcs	r5, r1, r4, asr r0
+    8090:	20215040 	eorcs	r5, r1, r0, asr #32
+
+00008094 <uart_getchar>:
+    8094:	e92d4010 	push	{r4, lr}
+    8098:	e59f001c 	ldr	r0, [pc, #28]	; 80bc <uart_getchar+0x28>
+    809c:	ebffffdd 	bl	8018 <GET32>
+    80a0:	e2100001 	ands	r0, r0, #1
+    80a4:	0a000002 	beq	80b4 <uart_getchar+0x20>
+    80a8:	e59f0010 	ldr	r0, [pc, #16]	; 80c0 <uart_getchar+0x2c>
+    80ac:	ebffffd9 	bl	8018 <GET32>
+    80b0:	e20000ff 	and	r0, r0, #255	; 0xff
+    80b4:	e8bd4010 	pop	{r4, lr}
+    80b8:	e12fff1e 	bx	lr
+    80bc:	20215054 	eorcs	r5, r1, r4, asr r0
+    80c0:	20215040 	eorcs	r5, r1, r0, asr #32
+
+000080c4 <hexstrings>:
+    80c4:	e92d4070 	push	{r4, r5, r6, lr}
+    80c8:	e1a05000 	mov	r5, r0
+    80cc:	e3a04020 	mov	r4, #32
+    80d0:	e2444004 	sub	r4, r4, #4
+    80d4:	e1a00435 	lsr	r0, r5, r4
+    80d8:	e200000f 	and	r0, r0, #15
+    80dc:	e3500009 	cmp	r0, #9
+    80e0:	82800037 	addhi	r0, r0, #55	; 0x37
+    80e4:	92800030 	addls	r0, r0, #48	; 0x30
+    80e8:	ebffffcd 	bl	8024 <uart_putword>
+    80ec:	e3540000 	cmp	r4, #0
+    80f0:	1afffff6 	bne	80d0 <hexstrings+0xc>
+    80f4:	e3a00020 	mov	r0, #32
+    80f8:	e8bd4070 	pop	{r4, r5, r6, lr}
+    80fc:	eaffffc8 	b	8024 <uart_putword>
+
+00008100 <hexstring>:
+    8100:	e92d4010 	push	{r4, lr}
+    8104:	ebffffee 	bl	80c4 <hexstrings>
+    8108:	e3a0000d 	mov	r0, #13
+    810c:	ebffffc4 	bl	8024 <uart_putword>
+    8110:	e3a0000a 	mov	r0, #10
+    8114:	e8bd4010 	pop	{r4, lr}
+    8118:	eaffffc1 	b	8024 <uart_putword>
+
+0000811c <init_uart>:
+    811c:	e92d4010 	push	{r4, lr}
+    8120:	e3a01001 	mov	r1, #1
+    8124:	e59f00d4 	ldr	r0, [pc, #212]	; 8200 <init_uart+0xe4>
+    8128:	ebffffb8 	bl	8010 <PUT32>
+    812c:	e3a01000 	mov	r1, #0
+    8130:	e59f00cc 	ldr	r0, [pc, #204]	; 8204 <init_uart+0xe8>
+    8134:	ebffffb5 	bl	8010 <PUT32>
+    8138:	e3a01000 	mov	r1, #0
+    813c:	e59f00c4 	ldr	r0, [pc, #196]	; 8208 <init_uart+0xec>
+    8140:	ebffffb2 	bl	8010 <PUT32>
+    8144:	e3a01003 	mov	r1, #3
+    8148:	e59f00bc 	ldr	r0, [pc, #188]	; 820c <init_uart+0xf0>
+    814c:	ebffffaf 	bl	8010 <PUT32>
+    8150:	e3a01000 	mov	r1, #0
+    8154:	e59f00b4 	ldr	r0, [pc, #180]	; 8210 <init_uart+0xf4>
+    8158:	ebffffac 	bl	8010 <PUT32>
+    815c:	e3a01000 	mov	r1, #0
+    8160:	e59f009c 	ldr	r0, [pc, #156]	; 8204 <init_uart+0xe8>
+    8164:	ebffffa9 	bl	8010 <PUT32>
+    8168:	e3a010c6 	mov	r1, #198	; 0xc6
+    816c:	e59f00a0 	ldr	r0, [pc, #160]	; 8214 <init_uart+0xf8>
+    8170:	ebffffa6 	bl	8010 <PUT32>
+    8174:	e59f109c 	ldr	r1, [pc, #156]	; 8218 <init_uart+0xfc>
+    8178:	e59f009c 	ldr	r0, [pc, #156]	; 821c <init_uart+0x100>
+    817c:	ebffffa3 	bl	8010 <PUT32>
+    8180:	e59f0098 	ldr	r0, [pc, #152]	; 8220 <init_uart+0x104>
+    8184:	ebffffa3 	bl	8018 <GET32>
+    8188:	e3c01a3f 	bic	r1, r0, #258048	; 0x3f000
+    818c:	e3811a12 	orr	r1, r1, #73728	; 0x12000
+    8190:	e59f0088 	ldr	r0, [pc, #136]	; 8220 <init_uart+0x104>
+    8194:	ebffff9d 	bl	8010 <PUT32>
+    8198:	e3a01000 	mov	r1, #0
+    819c:	e59f0080 	ldr	r0, [pc, #128]	; 8224 <init_uart+0x108>
+    81a0:	ebffff9a 	bl	8010 <PUT32>
+    81a4:	e3a04000 	mov	r4, #0
+    81a8:	e1a00004 	mov	r0, r4
+    81ac:	e2844001 	add	r4, r4, #1
+    81b0:	ebffff9a 	bl	8020 <dummy>
+    81b4:	e3540096 	cmp	r4, #150	; 0x96
+    81b8:	1afffffa 	bne	81a8 <init_uart+0x8c>
+    81bc:	e3a01903 	mov	r1, #49152	; 0xc000
+    81c0:	e59f0060 	ldr	r0, [pc, #96]	; 8228 <init_uart+0x10c>
+    81c4:	ebffff91 	bl	8010 <PUT32>
+    81c8:	e3a04000 	mov	r4, #0
+    81cc:	e1a00004 	mov	r0, r4
+    81d0:	e2844001 	add	r4, r4, #1
+    81d4:	ebffff91 	bl	8020 <dummy>
+    81d8:	e3540096 	cmp	r4, #150	; 0x96
+    81dc:	1afffffa 	bne	81cc <init_uart+0xb0>
+    81e0:	e3a01000 	mov	r1, #0
+    81e4:	e59f003c 	ldr	r0, [pc, #60]	; 8228 <init_uart+0x10c>
+    81e8:	ebffff88 	bl	8010 <PUT32>
+    81ec:	e3a01003 	mov	r1, #3
+    81f0:	e59f0010 	ldr	r0, [pc, #16]	; 8208 <init_uart+0xec>
+    81f4:	ebffff85 	bl	8010 <PUT32>
+    81f8:	e8bd4010 	pop	{r4, lr}
+    81fc:	e12fff1e 	bx	lr
+    8200:	20215004 	eorcs	r5, r1, r4
+    8204:	20215044 	eorcs	r5, r1, r4, asr #32
+    8208:	20215060 	eorcs	r5, r1, r0, rrx
+    820c:	2021504c 	eorcs	r5, r1, ip, asr #32
+    8210:	20215050 	eorcs	r5, r1, r0, asr r0
+    8214:	20215048 	eorcs	r5, r1, r8, asr #32
+    8218:	00000cb6 			; <UNDEFINED> instruction: 0x00000cb6
+    821c:	20215068 	eorcs	r5, r1, r8, rrx
+    8220:	20200004 	eorcs	r0, r0, r4
+    8224:	20200094 	mlacs	r0, r4, r0, r0
+    8228:	20200098 	mlacs	r0, r8, r0, r0
+
+0000822c <read_line>:
+    822c:	e92d4010 	push	{r4, lr}
+    8230:	ebffff97 	bl	8094 <uart_getchar>
+    8234:	e3500000 	cmp	r0, #0
+    8238:	13a00064 	movne	r0, #100	; 0x64
+    823c:	03a00000 	moveq	r0, #0
+    8240:	e8bd4010 	pop	{r4, lr}
+    8244:	e12fff1e 	bx	lr
+
+00008248 <write_line>:
+    8248:	e92d4070 	push	{r4, r5, r6, lr}
+    824c:	e2516000 	subs	r6, r1, #0
+    8250:	0a00000b 	beq	8284 <write_line+0x3c>
+    8254:	e3a04000 	mov	r4, #0
+    8258:	e2405001 	sub	r5, r0, #1
+    825c:	e2844001 	add	r4, r4, #1
+    8260:	e5f50001 	ldrb	r0, [r5, #1]!
+    8264:	ebffff7c 	bl	805c <uart_putchar>
+    8268:	e3540063 	cmp	r4, #99	; 0x63
+    826c:	93a03001 	movls	r3, #1
+    8270:	83a03000 	movhi	r3, #0
+    8274:	e1560004 	cmp	r6, r4
+    8278:	93a03000 	movls	r3, #0
+    827c:	e3530000 	cmp	r3, #0
+    8280:	1afffff5 	bne	825c <write_line+0x14>
+    8284:	e8bd4070 	pop	{r4, r5, r6, lr}
+    8288:	e12fff1e 	bx	lr
+
+0000828c <sklmain>:
+    828c:	e92d4080 	push	{r7, lr}
+    8290:	ebffffa1 	bl	811c <init_uart>
+    8294:	e3a07009 	mov	r7, #9
+    8298:	e59f6020 	ldr	r6, [pc, #32]	; 82c0 <sklmain+0x34>
+    829c:	e59f5020 	ldr	r5, [pc, #32]	; 82c4 <sklmain+0x38>
+    82a0:	e59f4020 	ldr	r4, [pc, #32]	; 82c8 <sklmain+0x3c>
+    82a4:	e1a00005 	mov	r0, r5
+    82a8:	ebffffdf 	bl	822c <read_line>
+    82ac:	e1a01007 	mov	r1, r7
+    82b0:	e5860000 	str	r0, [r6]
+    82b4:	e1a00004 	mov	r0, r4
+    82b8:	ebffffe2 	bl	8248 <write_line>
+    82bc:	eafffff8 	b	82a4 <sklmain+0x18>
+    82c0:	000082d8 	ldrdeq	r8, [r0], -r8	; <UNPREDICTABLE>
+    82c4:	000082dc 	ldrdeq	r8, [r0], -ip
+    82c8:	000082cc 	andeq	r8, r0, ip, asr #5
+
+Disassembly of section .data:
+
+000082cc <msg>:
+    82cc:	6e616854 	mcrvs	8, 3, r6, cr1, cr4, {2}
+    82d0:	6f59206b 	svcvs	0x0059206b
+    82d4:	Address 0x00000000000082d4 is out of bounds.
+
+
+Disassembly of section .bss:
+
+000082d8 <buffer_size>:
+    82d8:	00000000 	andeq	r0, r0, r0
+
+000082dc <buffer>:
+	...
+
+Disassembly of section .ARM.attributes:
+
+00000000 <.ARM.attributes>:
+   0:	00002a41 	andeq	r2, r0, r1, asr #20
+   4:	61656100 	cmnvs	r5, r0, lsl #2
+   8:	01006962 	tsteq	r0, r2, ror #18
+   c:	00000020 	andeq	r0, r0, r0, lsr #32
+  10:	4d524105 	ldfmie	f4, [r2, #-20]	; 0xffffffec
+  14:	54347620 	ldrtpl	r7, [r4], #-1568	; 0xfffff9e0
+  18:	08020600 	stmdaeq	r2, {r9, sl}
+  1c:	12010901 	andne	r0, r1, #16384	; 0x4000
+  20:	15011404 	strne	r1, [r1, #-1028]	; 0xfffffbfc
+  24:	18031701 	stmdane	r3, {r0, r8, r9, sl, ip}
+  28:	Address 0x0000000000000028 is out of bounds.
+
+
+Disassembly of section .comment:
+
+00000000 <.comment>:
+   0:	3a434347 	bcc	10d0d24 <buffer+0x10c8a48>
+   4:	35312820 	ldrcc	r2, [r1, #-2080]!	; 0xfffff7e0
+   8:	332e363a 			; <UNDEFINED> instruction: 0x332e363a
+   c:	732b312e 			; <UNDEFINED> instruction: 0x732b312e
+  10:	35326e76 	ldrcc	r6, [r2, #-3702]!	; 0xfffff18a
+  14:	39333033 	ldmdbcc	r3!, {r0, r1, r4, r5, ip, sp}
+  18:	7562312d 	strbvc	r3, [r2, #-301]!	; 0xfffffed3
+  1c:	31646c69 	cmncc	r4, r9, ror #24
+  20:	2e362029 	cdpcs	0, 3, cr2, cr6, cr9, {1}
+  24:	20312e33 	eorscs	r2, r1, r3, lsr lr
+  28:	37313032 			; <UNDEFINED> instruction: 0x37313032
+  2c:	30323630 	eorscc	r3, r2, r0, lsr r6
+	...

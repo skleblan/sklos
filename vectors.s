@@ -3,7 +3,7 @@
 _start:
     mov sp,#0x8000
     mov r0,pc
-    bl notmain
+    bl sklmain
 hang: b hang
 
 .globl PUT32
