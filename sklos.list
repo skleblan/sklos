@@ -7,7 +7,7 @@ Disassembly of section .text:
 00008000 <_start>:
     8000:	e3a0d902 	mov	sp, #32768	; 0x8000
     8004:	e1a0000f 	mov	r0, pc
-    8008:	eb00009f 	bl	828c <sklmain>
+    8008:	eb0000af 	bl	82cc <sklmain>
 
 0000800c <hang>:
     800c:	eafffffe 	b	800c <hang>
@@ -167,64 +167,74 @@ Disassembly of section .text:
 
 0000822c <read_line>:
     822c:	e92d4010 	push	{r4, lr}
-    8230:	ebffff97 	bl	8094 <uart_getchar>
-    8234:	e3500000 	cmp	r0, #0
-    8238:	13a00064 	movne	r0, #100	; 0x64
-    823c:	03a00000 	moveq	r0, #0
-    8240:	e8bd4010 	pop	{r4, lr}
-    8244:	e12fff1e 	bx	lr
+    8230:	e1a04000 	mov	r4, r0
+    8234:	ebffff96 	bl	8094 <uart_getchar>
+    8238:	e350000d 	cmp	r0, #13
+    823c:	8a000004 	bhi	8254 <read_line+0x28>
+    8240:	e59f3030 	ldr	r3, [pc, #48]	; 8278 <read_line+0x4c>
+    8244:	e1e03033 	mvn	r3, r3, lsr r0
+    8248:	e2133001 	ands	r3, r3, #1
+    824c:	01a00003 	moveq	r0, r3
+    8250:	0a000006 	beq	8270 <read_line+0x44>
+    8254:	e1a03004 	mov	r3, r4
+    8258:	e5c40000 	strb	r0, [r4]
+    825c:	e2842063 	add	r2, r4, #99	; 0x63
+    8260:	e5e30001 	strb	r0, [r3, #1]!
+    8264:	e1520003 	cmp	r2, r3
+    8268:	1afffffc 	bne	8260 <read_line+0x34>
+    826c:	e3a00064 	mov	r0, #100	; 0x64
+    8270:	e8bd4010 	pop	{r4, lr}
+    8274:	e12fff1e 	bx	lr
+    8278:	00002401 	andeq	r2, r0, r1, lsl #8
 
-00008248 <write_line>:
-    8248:	e92d4070 	push	{r4, r5, r6, lr}
-    824c:	e2516000 	subs	r6, r1, #0
-    8250:	0a00000b 	beq	8284 <write_line+0x3c>
-    8254:	e3a04000 	mov	r4, #0
-    8258:	e2405001 	sub	r5, r0, #1
-    825c:	e2844001 	add	r4, r4, #1
-    8260:	e5f50001 	ldrb	r0, [r5, #1]!
-    8264:	ebffff7c 	bl	805c <uart_putchar>
-    8268:	e3540063 	cmp	r4, #99	; 0x63
-    826c:	93a03001 	movls	r3, #1
-    8270:	83a03000 	movhi	r3, #0
-    8274:	e1560004 	cmp	r6, r4
-    8278:	93a03000 	movls	r3, #0
-    827c:	e3530000 	cmp	r3, #0
-    8280:	1afffff5 	bne	825c <write_line+0x14>
-    8284:	e8bd4070 	pop	{r4, r5, r6, lr}
-    8288:	e12fff1e 	bx	lr
+0000827c <write_line>:
+    827c:	e92d4070 	push	{r4, r5, r6, lr}
+    8280:	e2516000 	subs	r6, r1, #0
+    8284:	13a04000 	movne	r4, #0
+    8288:	12405001 	subne	r5, r0, #1
+    828c:	0a000009 	beq	82b8 <write_line+0x3c>
+    8290:	e2844001 	add	r4, r4, #1
+    8294:	e5f50001 	ldrb	r0, [r5, #1]!
+    8298:	ebffff6f 	bl	805c <uart_putchar>
+    829c:	e3540063 	cmp	r4, #99	; 0x63
+    82a0:	93a03001 	movls	r3, #1
+    82a4:	83a03000 	movhi	r3, #0
+    82a8:	e1560004 	cmp	r6, r4
+    82ac:	93a03000 	movls	r3, #0
+    82b0:	e3530000 	cmp	r3, #0
+    82b4:	1afffff5 	bne	8290 <write_line+0x14>
+    82b8:	e3a0000d 	mov	r0, #13
+    82bc:	ebffff66 	bl	805c <uart_putchar>
+    82c0:	e3a0000a 	mov	r0, #10
+    82c4:	e8bd4070 	pop	{r4, r5, r6, lr}
+    82c8:	eaffff63 	b	805c <uart_putchar>
 
-0000828c <sklmain>:
-    828c:	e92d4080 	push	{r7, lr}
-    8290:	ebffffa1 	bl	811c <init_uart>
-    8294:	e3a07009 	mov	r7, #9
-    8298:	e59f6020 	ldr	r6, [pc, #32]	; 82c0 <sklmain+0x34>
-    829c:	e59f5020 	ldr	r5, [pc, #32]	; 82c4 <sklmain+0x38>
-    82a0:	e59f4020 	ldr	r4, [pc, #32]	; 82c8 <sklmain+0x3c>
-    82a4:	e1a00005 	mov	r0, r5
-    82a8:	ebffffdf 	bl	822c <read_line>
-    82ac:	e1a01007 	mov	r1, r7
-    82b0:	e5860000 	str	r0, [r6]
-    82b4:	e1a00004 	mov	r0, r4
-    82b8:	ebffffe2 	bl	8248 <write_line>
-    82bc:	eafffff8 	b	82a4 <sklmain+0x18>
-    82c0:	000082d8 	ldrdeq	r8, [r0], -r8	; <UNPREDICTABLE>
-    82c4:	000082dc 	ldrdeq	r8, [r0], -ip
-    82c8:	000082cc 	andeq	r8, r0, ip, asr #5
+000082cc <sklmain>:
+    82cc:	e92d4010 	push	{r4, lr}
+    82d0:	ebffff91 	bl	811c <init_uart>
+    82d4:	e3a06009 	mov	r6, #9
+    82d8:	e59f5018 	ldr	r5, [pc, #24]	; 82f8 <sklmain+0x2c>
+    82dc:	e59f4018 	ldr	r4, [pc, #24]	; 82fc <sklmain+0x30>
+    82e0:	e1a00005 	mov	r0, r5
+    82e4:	ebffffd0 	bl	822c <read_line>
+    82e8:	e1a01006 	mov	r1, r6
+    82ec:	e1a00004 	mov	r0, r4
+    82f0:	ebffffe1 	bl	827c <write_line>
+    82f4:	eafffff9 	b	82e0 <sklmain+0x14>
+    82f8:	0000830c 	andeq	r8, r0, ip, lsl #6
+    82fc:	00008300 	andeq	r8, r0, r0, lsl #6
 
 Disassembly of section .data:
 
-000082cc <msg>:
-    82cc:	6e616854 	mcrvs	8, 3, r6, cr1, cr4, {2}
-    82d0:	6f59206b 	svcvs	0x0059206b
-    82d4:	Address 0x00000000000082d4 is out of bounds.
+00008300 <msg>:
+    8300:	6e616854 	mcrvs	8, 3, r6, cr1, cr4, {2}
+    8304:	6f59206b 	svcvs	0x0059206b
+    8308:	Address 0x0000000000008308 is out of bounds.
 
 
 Disassembly of section .bss:
 
-000082d8 <buffer_size>:
-    82d8:	00000000 	andeq	r0, r0, r0
-
-000082dc <buffer>:
+0000830c <buffer>:
 	...
 
 Disassembly of section .ARM.attributes:
@@ -246,7 +256,7 @@ Disassembly of section .ARM.attributes:
 Disassembly of section .comment:
 
 00000000 <.comment>:
-   0:	3a434347 	bcc	10d0d24 <buffer+0x10c8a48>
+   0:	3a434347 	bcc	10d0d24 <buffer+0x10c8a18>
    4:	35312820 	ldrcc	r2, [r1, #-2080]!	; 0xfffff7e0
    8:	332e363a 			; <UNDEFINED> instruction: 0x332e363a
    c:	732b312e 			; <UNDEFINED> instruction: 0x732b312e

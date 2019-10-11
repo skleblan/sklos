@@ -1,7 +1,7 @@
 #include "uart.h"
 
 unsigned char buffer[100];
-unsigned int buffer_size = 0;
+//volatile unsigned int buffer_size = 0;
 unsigned char msg[] = "Thank You";
 
 void sklmain(void)
@@ -11,7 +11,7 @@ void sklmain(void)
 
   while(1)
   {
-    buffer_size = read_line( buffer );
+    read_line( buffer );
     write_line( msg, 9 );
   }
 }

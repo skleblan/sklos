@@ -124,28 +124,18 @@ void init_uart ( void )
     PUT32(AUX_MU_CNTL_REG,3);
 }
 
-static unsigned char output_line_buffer[LINE_BUFFER_SIZE];
-//static unsigned int output_line_idx = 0;
-static unsigned int output_line_length = 0;
-//static unsigned char output_line_ready = 0; //ready means empty
-
-static unsigned char input_line_buffer[LINE_BUFFER_SIZE];
-//static unsigned int input_line_idx = 0;
-static unsigned int input_line_length = 0;
-//static unsigned char input_line_full = 0; //ready means full
-
 unsigned int read_line( unsigned char * data )
 {
   unsigned int idx = 0;
   unsigned char temp;
 
   temp = uart_getchar();
-  while(idx < LINE_BUFFER_SIZE && temp != 0x0)
+  while(idx < LINE_BUFFER_SIZE && temp != 0x0 && 
+    temp != '\n' && temp != '\r')
   {
-    input_line_buffer[idx] = temp;
+    data[idx] = temp;
     idx++;
   }
-  data = input_line_buffer;
   return idx;
 }
 
@@ -157,32 +147,10 @@ void write_line( unsigned char * data, unsigned int size)
     uart_putchar(data[idx]);
     idx++;
   }
+  uart_putchar('\r');
+  uart_putchar('\n');
 }
 
-#if 0
-void handle_uart_io( void )
-{
-  unsigned char tt;
-
-  if(input_line_length < LINE_BUFFER_SIZE)
-  {
-    tt = uart_getchar(); //blocking
-    if(tt == '\r' || tt == '\n')
-      input_line_full = 1;
-    input_line_buffer[input_line_length] = tt;
-    input_line_length++;
-  }
-
-  if(output_line_idx < output_line_length)
-  {
-    tt = output_line_buffer[output_line_idx];
-    uart_putchar(tt);
-    if(tt == '\r' || tt == '\n')
-      output_line_ready = 0;
-    output_line_idx++:
-  }
-}
-#endif
 
 //------------------------------------------------------------------------
 //    hexstring(0x12345678);
