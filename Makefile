@@ -23,11 +23,14 @@ vectors.o : vectors.s
 sklmain.o : sklmain.c
 	$(ARMGNU)-gcc $(COPS) -c sklmain.c -o sklmain.o
 
+util.o : util.c util.h
+	$(ARMGNU)-gcc $(COPS) -c util.c -o util.o
+
 uart.o : uart.c uart.h
 	$(ARMGNU)-gcc $(COPS) -c uart.c -o uart.o
 
-sklos.elf : memmap vectors.o uart.o sklmain.o 
-	$(ARMGNU)-ld vectors.o uart.o sklmain.o -T memmap -o sklos.elf
+sklos.elf : memmap vectors.o uart.o sklmain.o util.o
+	$(ARMGNU)-ld vectors.o uart.o sklmain.o util.o -T memmap -o sklos.elf
 	$(ARMGNU)-objdump -D sklos.elf > sklos.list
 
 sklos.bin : sklos.elf

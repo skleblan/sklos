@@ -34,17 +34,10 @@ extern void dummy ( unsigned int );
 //((250,000,000/115200)/8)-1 = 270
 //9600 baud = 3254
 
-#define LINE_BUFFER_SIZE 100
+//#define LINE_BUFFER_SIZE 100
 
-//------------------------------------------------------------------------
-void uart_putword ( unsigned int c )
-{
-    while(1)
-    {
-        if(GET32(AUX_MU_LSR_REG)&0x20) break;
-    }
-    PUT32(AUX_MU_IO_REG,c);
-}
+#define INIT_MSG_SIZE 27
+unsigned char init_msg[] = "UART has been initialized\r\n";
 
 void uart_putchar ( unsigned char c )
 {
@@ -67,32 +60,6 @@ unsigned char uart_getchar ( void )
 	  ra=GET32(AUX_MU_IO_REG);
         retval = ra & 0xFF;
 	return retval;
-}
-
-//------------------------------------------------------------------------
-void hexstrings ( unsigned int d )
-{
-    //unsigned int ra;
-    unsigned int rb;
-    unsigned int rc;
-
-    rb=32;
-    while(1)
-    {
-        rb-=4;
-        rc=(d>>rb)&0xF;
-        if(rc>9) rc+=0x37; else rc+=0x30;
-        uart_putword(rc);
-        if(rb==0) break;
-    }
-    uart_putword(0x20);
-}
-//------------------------------------------------------------------------
-void hexstring ( unsigned int d )
-{
-    hexstrings(d);
-    uart_putword(0x0D);
-    uart_putword(0x0A);
 }
 
 void init_uart ( void )
@@ -122,27 +89,54 @@ void init_uart ( void )
     PUT32(GPPUDCLK0,0);
 
     PUT32(AUX_MU_CNTL_REG,3);
+
+    writeln(init_msg, INIT_MSG_SIZE);
 }
 
-unsigned int read_line( unsigned char * data )
+unsigned int readln(unsigned char * data, unsigned int size)
 {
   unsigned int idx = 0;
   unsigned char temp;
 
   temp = uart_getchar();
-  while(idx < LINE_BUFFER_SIZE && temp != 0x0 && 
+  while(idx < size - 1 && 
     temp != '\n' && temp != '\r')
+  {
+    if(temp != 0)
+    {
+      uart_putchar(temp); //echo's what the user is typing
+      data[idx] = temp;
+      idx++;
+    }
+    temp = uart_getchar();
+  }
+  data[idx] = 0;
+  idx++;
+  uart_putchar('\r');
+  uart_putchar('\n');
+  return idx;
+}
+
+//preparing for ability to send update firmware via RS-232
+unsigned int read(unsigned char* data, unsigned int buf_size)
+{
+  unsigned int idx = 0;
+  unsigned char temp;
+
+  temp = uart_getchar();
+  while(idx < buf_size)
   {
     data[idx] = temp;
     idx++;
+    temp = uart_getchar();
   }
   return idx;
 }
 
-void write_line( unsigned char * data, unsigned int size)
+void writeln( unsigned char * data, unsigned int size)
 {
   unsigned int idx = 0;
-  while(idx < LINE_BUFFER_SIZE && idx < size)
+  while(idx < size)
   {
     uart_putchar(data[idx]);
     idx++;
@@ -151,21 +145,3 @@ void write_line( unsigned char * data, unsigned int size)
   uart_putchar('\n');
 }
 
-
-//------------------------------------------------------------------------
-//    hexstring(0x12345678);
-//    hexstring(earlypc);
-//-------------------------------------------------------------------------
-
-
-//-------------------------------------------------------------------------
-//
-// Copyright (c) 2012 David Welch dwelch@dwelch.com
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
-//-------------------------------------------------------------------------
