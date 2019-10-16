@@ -93,7 +93,7 @@ void init_uart ( void )
     writeln(init_msg, INIT_MSG_SIZE);
 }
 
-unsigned int readln(unsigned char * data, unsigned int size)
+unsigned int readln(char * data, unsigned int size)
 {
   unsigned int idx = 0;
   unsigned char temp;
@@ -105,7 +105,7 @@ unsigned int readln(unsigned char * data, unsigned int size)
     if(temp != 0)
     {
       uart_putchar(temp); //echo's what the user is typing
-      data[idx] = temp;
+      data[idx] = (signed char)temp;
       idx++;
     }
     temp = uart_getchar();

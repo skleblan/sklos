@@ -204,7 +204,7 @@ Disassembly of section .text:
     82c0:	20200004 	eorcs	r0, r0, r4
     82c4:	20200094 	mlacs	r0, r4, r0, r0
     82c8:	20200098 	mlacs	r0, r8, r0, r0
-    82cc:	000083c0 	andeq	r8, r0, r0, asr #7
+    82cc:	000083e0 	andeq	r8, r0, r0, ror #7
 
 000082d0 <sklmain>:
     82d0:	e92d4080 	push	{r7, lr}
@@ -220,8 +220,8 @@ Disassembly of section .text:
     82f8:	e1a00004 	mov	r0, r4
     82fc:	ebffff9e 	bl	817c <writeln>
     8300:	eafffff8 	b	82e8 <sklmain+0x18>
-    8304:	000083e8 	andeq	r8, r0, r8, ror #7
-    8308:	000083dc 	ldrdeq	r8, [r0], -ip
+    8304:	00008424 	andeq	r8, r0, r4, lsr #8
+    8308:	000083fc 	strdeq	r8, [r0], -ip
 
 0000830c <strlen>:
     830c:	e5d03000 	ldrb	r3, [r0]
@@ -276,26 +276,49 @@ Disassembly of section .text:
     83b8:	a1a00001 	movge	r0, r1
     83bc:	e12fff1e 	bx	lr
 
+Disassembly of section .rodata:
+
+000083c0 <.rodata>:
+    83c0:	00000000 	andeq	r0, r0, r0
+    83c4:	6f686365 	svcvs	0x00686365
+    83c8:	00000000 	andeq	r0, r0, r0
+    83cc:	746f6f62 	strbtvc	r6, [pc], #-3938	; 83d4 <min+0x20>
+    83d0:	0072646c 	rsbseq	r6, r2, ip, ror #8
+    83d4:	00000000 	andeq	r0, r0, r0
+    83d8:	6372616d 	cmnvs	r2, #1073741851	; 0x4000001b
+    83dc:	Address 0x00000000000083dc is out of bounds.
+
+
 Disassembly of section .data:
 
-000083c0 <init_msg>:
-    83c0:	54524155 	ldrbpl	r4, [r2], #-341	; 0xfffffeab
-    83c4:	73616820 	cmnvc	r1, #32, 16	; 0x200000
-    83c8:	65656220 	strbvs	r6, [r5, #-544]!	; 0xfffffde0
-    83cc:	6e69206e 	cdpvs	0, 6, cr2, cr9, cr14, {3}
-    83d0:	61697469 	cmnvs	r9, r9, ror #8
-    83d4:	657a696c 	ldrbvs	r6, [sl, #-2412]!	; 0xfffff694
-    83d8:	000a0d64 	andeq	r0, sl, r4, ror #26
+000083e0 <init_msg>:
+    83e0:	54524155 	ldrbpl	r4, [r2], #-341	; 0xfffffeab
+    83e4:	73616820 	cmnvc	r1, #32, 16	; 0x200000
+    83e8:	65656220 	strbvs	r6, [r5, #-544]!	; 0xfffffde0
+    83ec:	6e69206e 	cdpvs	0, 6, cr2, cr9, cr14, {3}
+    83f0:	61697469 	cmnvs	r9, r9, ror #8
+    83f4:	657a696c 	ldrbvs	r6, [sl, #-2412]!	; 0xfffff694
+    83f8:	000a0d64 	andeq	r0, sl, r4, ror #26
 
-000083dc <msg>:
-    83dc:	6e616854 	mcrvs	8, 3, r6, cr1, cr4, {2}
-    83e0:	6f59206b 	svcvs	0x0059206b
-    83e4:	Address 0x00000000000083e4 is out of bounds.
+000083fc <msg>:
+    83fc:	6e616854 	mcrvs	8, 3, r6, cr1, cr4, {2}
+    8400:	6f59206b 	svcvs	0x0059206b
+    8404:	00000075 	andeq	r0, r0, r5, ror r0
 
+00008408 <menucmdlist>:
+    8408:	000083c0 	andeq	r8, r0, r0, asr #7
+    840c:	000083c0 	andeq	r8, r0, r0, asr #7
+    8410:	000083c0 	andeq	r8, r0, r0, asr #7
+    8414:	000083c4 	andeq	r8, r0, r4, asr #7
+    8418:	000083cc 	andeq	r8, r0, ip, asr #7
+    841c:	000083d8 	ldrdeq	r8, [r0], -r8	; <UNPREDICTABLE>
+
+00008420 <menucmdlistsz>:
+    8420:	00000006 	andeq	r0, r0, r6
 
 Disassembly of section .bss:
 
-000083e8 <buffer>:
+00008424 <buffer>:
 	...
 
 Disassembly of section .ARM.attributes:
@@ -317,7 +340,7 @@ Disassembly of section .ARM.attributes:
 Disassembly of section .comment:
 
 00000000 <.comment>:
-   0:	3a434347 	bcc	10d0d24 <buffer+0x10c893c>
+   0:	3a434347 	bcc	10d0d24 <buffer+0x10c8900>
    4:	35312820 	ldrcc	r2, [r1, #-2080]!	; 0xfffff7e0
    8:	332e363a 			; <UNDEFINED> instruction: 0x332e363a
    c:	732b312e 			; <UNDEFINED> instruction: 0x732b312e

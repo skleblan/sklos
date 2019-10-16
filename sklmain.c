@@ -12,9 +12,9 @@ unsigned char msg[] = "Thank You";
 #define MENUCMD_BOOTLDR    0x04
 #define MENUCMD_MARCO      0x05
 
-#if 0
+#if 1
 unsigned int menucmdlistsz = 6;
-unsigned char* menucmdlist[] = 
+const char* menucmdlist[] = 
 {
   "\0", //empty
   "\0", //abort
