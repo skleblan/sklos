@@ -1,0 +1,23 @@
+sending to device from PC
+
+0: sync (0x7C)
+1: datalength
+2: !datalength
+3: type = addr-start | data | branchcmd
+4: seq (0-255. then resend addr-start, reset to 0)
+5: pass=0/fail=!0 (add other codes in future)
+6: data[0]
+7: data[1]
+8: data[2]
+9: data[3]
+A: data[4]
+B: data[5]
+C: data[6]
+D: data[7]
+E: 0x7D
+F: checksum
+
+receiving from device to PC
+send exact same packet except for pass/fail
+(and obviously checksum)
+
