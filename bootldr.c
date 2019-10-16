@@ -36,6 +36,7 @@ void load_new_program()
   int rcvd_len = 0;
   bootldr_pkt_t* packet;
   char* cur_start_addr;
+  int i = 0;
 
   while(1)
   {
@@ -48,20 +49,21 @@ void load_new_program()
     
     //check inverted datalength
     
-    switch(packet.type)
+    switch(packet->type)
     {
       case addr_start:
 	cur_start_addr = 0;
 	for(i = 0; i < 4; i++)
 	{
-	  cur_start_addr |= packet.data[i]<<(8*(i-1));
+	  cur_start_addr |= packet->data[i]<<(8*(i-1));
 	}
 	break;
       case data:
 	break;
-case branch_cmd:
+      case branch_cmd:
 	break;
     }
 
-
+  }
+}
 
