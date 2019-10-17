@@ -1,0 +1,10 @@
+Finish bootloader
+
+Change uart driver to use asynchronous interrupts.
+Add menu option to set GPIO (on, off, blinking)
+Add menu option to read random chunk of memory and display to screen.
+
+integrate printf library
+
+create compile-time switches to differentiate r-pi 1 from r-pi 3
+setup uart driver to work on r-pi 3
