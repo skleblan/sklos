@@ -13,7 +13,6 @@ unsigned char msg[] = "Thank You";
 #define MENUCMD_BOOTLDR    0x04
 #define MENUCMD_MARCO      0x05
 
-#if 1
 unsigned int menucmdlistsz = 6;
 const char* menucmdlist[] = 
 {
@@ -24,33 +23,19 @@ const char* menucmdlist[] =
   "bootldr\0",
   "marco\0"
 };
-#endif
 
-void sklmain(void)
-{
-  //unsigned int chars_read = 0;
-  init_uart();
-
-  while(1)
-  {
-    readln(buffer, BUFF_SIZE);
-    menumain(buffer, chars_read);
-    writeln(msg, 9);
-  }
-}
-
-#if 1
-
-unsigned int rdmnucmd(unsigned char* buffer, unsigned int bufsize)
+unsigned int rdmnucmd(char* buffer, unsigned int bufsize)
 {
   int i;
   int is_equal = 0;
+  int cmdlen = 0;
+
   for(i = 3; i < menucmdlistsz; i++)
   {
-    cmdlen = sklstrlen(menucmdlist[i]);
+    cmdlen = strlen(menucmdlist[i], 0xF);
     
-    is_equal = sklstrncmp(menucmdlist[i], buffer, cmdlen);
-    if(is_equal)
+    is_equal = strncmp(menucmdlist[i], buffer, cmdlen);
+    if(is_equal == 0)
     {
       return i;
     }
@@ -58,7 +43,7 @@ unsigned int rdmnucmd(unsigned char* buffer, unsigned int bufsize)
   return MENUCMD_UNKNOWN;
 }
 
-void menumain(unsigned char* buffer, unsigned int bufsize)
+void menumain(char* buffer, unsigned int bufsize)
 {
   unsigned int menu_cmd;
 
@@ -67,17 +52,29 @@ void menumain(unsigned char* buffer, unsigned int bufsize)
   switch(menu_cmd)
   {
     case MENUCMD_MARCO:
-      writeln("polo");
+      writeln("polo", 4);
       break;
     case MENUCMD_ECHO:
     case MENUCMD_EMPTY:
     case MENUCMD_BOOTLDR:
     case MENUCMD_UNKNOWN:
     case MENUCMD_BKSP_ABRT:
-      writeln("unknown command");
+      writeln("unknown cmd", 11);
       break;
   }
 }
+
+void sklmain(void)
+{
+  unsigned int chars_read = 0;
+  init_uart();
+
+  while(1)
+  {
+    chars_read = readln((char*)buffer, BUFF_SIZE);
+    menumain((char*)buffer, chars_read);
+    writeln((char*)msg, 9);
+  }
 }
 
-#endif
+

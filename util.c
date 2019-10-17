@@ -1,6 +1,6 @@
+#include "util.h"
 
-
-unsigned int strlen(unsigned char* txt, unsigned int maxlen)
+unsigned int strlen(const char* txt, unsigned int maxlen)
 {
   unsigned int idx = 0;
   while(txt[idx] != 0 && idx < maxlen) idx++;
@@ -8,7 +8,7 @@ unsigned int strlen(unsigned char* txt, unsigned int maxlen)
 }
   
 
-signed int strncmp(unsigned char* first, unsigned char* second, unsigned int len)
+signed int strncmp(const char* first, const char* second, unsigned int len)
 {
   int i;
   for(i = 0; i < len; i++)

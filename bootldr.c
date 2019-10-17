@@ -1,6 +1,5 @@
 #include "uart.h"
-
-extern void BRANCHTO( unsigned int );
+#include "vectors.h"
 
 enum bootldr_pkt_type
 {
@@ -36,11 +35,11 @@ typedef struct bootldr_pkt_struct bootldr_pkt_t;
 void load_new_program()
 {
   unsigned char buffer[0xF]; //bigger buffer?
-  int rcvd_len = 0;
+  //int rcvd_len = 0;
   bootldr_pkt_t* packet;
-  char* cur_start_addr;
-  int i = 0;
-  int tempaddr;
+  //char* cur_start_addr;
+  //int i = 0;
+  //int tempaddr;
 
   while(1)
   {

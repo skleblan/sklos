@@ -2,10 +2,7 @@
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 #include "uart.h"
-
-extern void PUT32 ( unsigned int, unsigned int );
-extern unsigned int GET32 ( unsigned int );
-extern void dummy ( unsigned int );
+#include "vectors.h"
 
 #define GPFSEL1 0x20200004
 #define GPSET0  0x2020001C
@@ -90,7 +87,7 @@ void init_uart ( void )
 
     PUT32(AUX_MU_CNTL_REG,3);
 
-    writeln(init_msg, INIT_MSG_SIZE);
+    writeln((char*)init_msg, INIT_MSG_SIZE);
 }
 
 unsigned int readln(char * data, unsigned int size)
@@ -143,9 +140,9 @@ void write(unsigned char* data, unsigned int size)
   }
 }
 
-void writeln( unsigned char * data, unsigned int size)
+void writeln(char * data, unsigned int size)
 {
-  write(data, size);
+  write((unsigned char*)data, size);
   uart_putchar('\r');
   uart_putchar('\n');
 }
