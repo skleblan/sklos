@@ -16,6 +16,10 @@ GET32:
     ldr r0,[r0]
     bx lr
 
+.globl BRANCHTO
+BRANCHTO:
+    bx r0
+
 .globl dummy
 dummy:
     bx lr

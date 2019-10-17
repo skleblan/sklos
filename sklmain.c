@@ -1,6 +1,7 @@
 #include "uart.h"
 #include "util.h"
 
+
 #define BUFF_SIZE 100
 unsigned char buffer[BUFF_SIZE];
 unsigned char msg[] = "Thank You";
@@ -33,12 +34,12 @@ void sklmain(void)
   while(1)
   {
     readln(buffer, BUFF_SIZE);
-    //menumain(buffer, chars_read);
+    menumain(buffer, chars_read);
     writeln(msg, 9);
   }
 }
 
-#if 0
+#if 1
 
 unsigned int rdmnucmd(unsigned char* buffer, unsigned int bufsize)
 {
@@ -48,10 +49,35 @@ unsigned int rdmnucmd(unsigned char* buffer, unsigned int bufsize)
   {
     cmdlen = sklstrlen(menucmdlist[i]);
     
-    is_equal = sklstrncmp(
+    is_equal = sklstrncmp(menucmdlist[i], buffer, cmdlen);
+    if(is_equal)
+    {
+      return i;
+    }
+  }
+  return MENUCMD_UNKNOWN;
+}
 
 void menumain(unsigned char* buffer, unsigned int bufsize)
 {
+  unsigned int menu_cmd;
+
+  menu_cmd = rdmnucmd(buffer, bufsize);
+
+  switch(menu_cmd)
+  {
+    case MENUCMD_MARCO:
+      writeln("polo");
+      break;
+    case MENUCMD_ECHO:
+    case MENUCMD_EMPTY:
+    case MENUCMD_BOOTLDR:
+    case MENUCMD_UNKNOWN:
+    case MENUCMD_BKSP_ABRT:
+      writeln("unknown command");
+      break;
+  }
+}
 }
 
 #endif

@@ -1,5 +1,7 @@
 #include "uart.h"
 
+extern void BRANCHTO( unsigned int );
+
 enum bootldr_pkt_type
 {
 //  addr_start,
@@ -58,6 +60,7 @@ void load_new_program()
 	write((unsigned char*)packet, 0xF);
 	break;
       case branch_cmd:
+	BRANCHTO(packet->addr);
 	break;
     }
 

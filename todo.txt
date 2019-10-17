@@ -1,4 +1,5 @@
 Finish bootloader
+Finish menu interface
 
 Change uart driver to use asynchronous interrupts.
 Add menu option to set GPIO (on, off, blinking)
