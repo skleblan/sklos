@@ -2,7 +2,7 @@
 
 enum bootldr_pkt_type
 {
-  addr_start,
+//  addr_start,
   data,
   branch_cmd
 };
@@ -13,9 +13,10 @@ struct bootldr_pkt_struct
   char datalen;
   char invdatalen;
   enum bootldr_pkt_type type;
-  unsigned char sequence;
+  unsigned char sequence_dnu;
   char passfail;
-  unsigned char data[8];
+  unsigned int addr;
+  unsigned int data;
   char end_sync;
   char cksum;
 };
@@ -32,16 +33,17 @@ typedef struct bootldr_pkt_struct bootldr_pkt_t;
 
 void load_new_program()
 {
-  char buffer[0xF]; //bigger buffer?
+  unsigned char buffer[0xF]; //bigger buffer?
   int rcvd_len = 0;
   bootldr_pkt_t* packet;
   char* cur_start_addr;
   int i = 0;
+  int tempaddr;
 
   while(1)
   {
     read(buffer, 0xF);
-    packet = buffer;
+    packet = (bootldr_pkt_t*) buffer;
     
     //check packet sync. begin and end
     
@@ -51,14 +53,9 @@ void load_new_program()
     
     switch(packet->type)
     {
-      case addr_start:
-	cur_start_addr = 0;
-	for(i = 0; i < 4; i++)
-	{
-	  cur_start_addr |= packet->data[i]<<(8*(i-1));
-	}
-	break;
       case data:
+	PUT32(packet->addr, packet->data);
+	write((unsigned char*)packet, 0xF);
 	break;
       case branch_cmd:
 	break;

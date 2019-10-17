@@ -3,9 +3,7 @@ ARMGNU ?= arm-none-eabi
 
 COPS = -Wall -O2 -nostdlib -nostartfiles -ffreestanding 
 
-gcc : sklos.hex sklos.bin
-
-all : gcc
+all : sklos.hex sklos.bin
 
 clean :
 	rm -f *.o

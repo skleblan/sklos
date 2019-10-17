@@ -133,7 +133,7 @@ unsigned int read(unsigned char* data, unsigned int buf_size)
   return idx;
 }
 
-void writeln( unsigned char * data, unsigned int size)
+void write(unsigned char* data, unsigned int size)
 {
   unsigned int idx = 0;
   while(idx < size)
@@ -141,6 +141,11 @@ void writeln( unsigned char * data, unsigned int size)
     uart_putchar(data[idx]);
     idx++;
   }
+}
+
+void writeln( unsigned char * data, unsigned int size)
+{
+  write(data, size);
   uart_putchar('\r');
   uart_putchar('\n');
 }
