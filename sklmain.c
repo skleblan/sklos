@@ -8,7 +8,6 @@
 
 #define BUFF_SIZE 100
 unsigned char buffer[BUFF_SIZE];
-unsigned char msg[] = "Thank You";
 
 #define MENUCMD_EMPTY      0x00
 #define MENUCMD_BKSP_ABRT  0x01
@@ -60,11 +59,27 @@ void toggle_led(void)
   }
 }
 
+void echo_text(char* original_txt, unsigned int bufsize)
+{
+  int cmdlen = 4 + 1; //echo is 4 chars + 1 for the space
+  char* substr_ptr;
+  substr_ptr = original_txt + cmdlen;
+  writeln(substr_ptr, bufsize - cmdlen);
+}
+
 unsigned int rdmnucmd(char* buffer, unsigned int bufsize)
 {
   int i;
   int is_equal = 0;
   int cmdlen = 0;
+
+  for(i = 0; i < bufsize; i++)
+  {
+    if(buffer[i] == '\b') //backspace character. aka ^H. aka 0x08.
+    {
+      return MENUCMD_BKSP_ABRT;
+    }
+  }
 
   for(i = 3; i < menucmdlistsz; i++)
   {
@@ -94,10 +109,14 @@ void menumain(char* buffer, unsigned int bufsize)
       toggle_led();
       break;
     case MENUCMD_ECHO:
+      echo_text(buffer, bufsize);
+      break;
+    case MENUCMD_BKSP_ABRT:
+      writeln("cmd aborted", 11);
+      break;
     case MENUCMD_EMPTY:
     case MENUCMD_BOOTLDR:
     case MENUCMD_UNKNOWN:
-    case MENUCMD_BKSP_ABRT:
       writeln("unknown cmd", 11);
       break;
   }
@@ -113,7 +132,6 @@ void sklmain(void)
   {
     chars_read = readln((char*)buffer, BUFF_SIZE);
     menumain((char*)buffer, chars_read);
-    writeln((char*)msg, 9);
   }
 }
 

@@ -6,7 +6,6 @@ unsigned int strlen(const char* txt, unsigned int maxlen)
   while(txt[idx] != 0 && idx < maxlen) idx++;
   return idx;
 }
-  
 
 signed int strncmp(const char* first, const char* second, unsigned int len)
 {
