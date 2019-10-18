@@ -1,9 +1,11 @@
 
 ARMGNU ?= arm-none-eabi
-
 COPS = -Wall -O2 -nostdlib -nostartfiles -ffreestanding 
 
-all : sklos.hex sklos.bin
+all : kernel.img
+
+kernel.img : sklos.hex sklos.bin
+	cp sklos.bin kernel.img
 
 clean :
 	rm -f *.o
@@ -29,3 +31,5 @@ sklos.bin : sklos.elf
 sklos.hex : sklos.elf
 	$(ARMGNU)-objcopy sklos.elf -O ihex sklos.hex
 
+prograspi : prograspi.c ser.c ser.h
+	gcc -O2 -Wall prograspi.c ser.c -o prograspi
