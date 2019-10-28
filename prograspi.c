@@ -34,40 +34,22 @@ int raspload ( unsigned int addr, unsigned int data )
     unsigned int rb;
     unsigned int rc;
     unsigned int rd;
-
-    //printf("load 0x%08X, 0x%04X\n",addr,data);
+    bootldr_pkt_t datapkt;
+    char* sdata = (char*)&datapkt;
 
     if(firstaddr==0xFFFFFFFF) firstaddr=addr;
 
-    ra=0;
-    sdata[ra++]=0x7C;
-    sdata[ra++]=2+5+4;
-    sdata[ra]=~sdata[ra-1];  ra++;
-    //
-    sdata[ra++]=0x07;
-    sdata[ra++]=seq&0xFF; seq++;
-    sdata[ra++]=0;
-    sdata[ra++]=0;
-    sdata[ra++]=0;
+    datapkt.begin_sync = 0x7C;
+    datapkt.datalen = 4;
+    datapkt.invdatalen = ~4;
+    datapkt.type = data;
+    datapkt.passfail = 0;
+    datapkt.addr = addr;
+    datapkt.data = data;
+    datapkt.end_sync = 0x7D;
 
-    sdata[ra++]=(addr>>24)&0xFF;
-    sdata[ra++]=(addr>>16)&0xFF;
-    sdata[ra++]=(addr>> 8)&0xFF;
-    sdata[ra++]=(addr>> 0)&0xFF;
-//    for(rd=0;rd<rb;rd+=2)
-    {
-        sdata[ra++]=(data>>8)&0xFF;
-        sdata[ra++]=(data>>0)&0xFF;
-    }
-    //
-    sdata[ra++]=0x7D;
-    for(rd=0,rc=0;rd<ra;rd++) rc+=sdata[rd];
-    sdata[ra++]=(~rc)&0xFF;
-
-    //for(rd=0;rd<ra;rd++) printf("%02X ",sdata[rd]); printf("\n");
-
-    //for(rd=0,rc=0x00;rd<ra;rd++) rc+=sdata[rd];
-    //rc&=0xFF;
+    for(rd=0,rc=0;rd<;rd++) rc+=sdata[rd];
+    datapkt.cksum = (~rc)&0xFF;
 
     ser_senddata(sdata,ra);
     rb=0;
@@ -226,8 +208,6 @@ int readhex ( FILE *fp )
 
 
 }
-
-
 
 //-----------------------------------------------------------------------------
 int main ( int argc, char *argv[] )
