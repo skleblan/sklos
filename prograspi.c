@@ -1,8 +1,3 @@
-
-//-----------------------------------------------------------------------------
-// Copyright (C) David Welch, 2000, 2003, 2008, 2009, 2012
-//-----------------------------------------------------------------------------
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,30 +5,7 @@
 FILE *fp;
 
 #include "ser.h"
-
-struct bootldr_pkt_struct
-{
-  char begin_sync;
-  char datalen;
-  char invdatalen;
-  enum bootldr_pkt_type type;
-  unsigned char sequence_dnu;
-  char passfail;
-  unsigned int addr;
-  unsigned int data;
-  char end_sync;
-  char cksum;
-};
-
-
-unsigned int seq;
-unsigned int ra,rb,rc,rd;
-unsigned int addr;
-unsigned int firstaddr;
-
-unsigned char data[128];
-unsigned char sdata[512];
-unsigned char rdata[5000];
+#include "bootldr.h"
 
 //-----------------------------------------------------------------------------
 int check_packet ( void )
@@ -260,9 +232,9 @@ int readhex ( FILE *fp )
 //-----------------------------------------------------------------------------
 int main ( int argc, char *argv[] )
 {
-    unsigned int ra;
-    //unsigned int rb;
-    unsigned int rc;
+    unsigned int cksum;
+    bootldr_pkt_t jump_pkt;
+    char* sdata = (char*)&jump_pkt;
 
     if(argc<3)
     {
@@ -294,30 +266,19 @@ int main ( int argc, char *argv[] )
 
     printf("Entry point: 0x%08X\n",firstaddr);
 
-    ra=0;
-    sdata[ra++]=0x7C;
-    sdata[ra++]=5+4;
-    sdata[ra]=~sdata[ra-1]; ra++;
-    //
-    sdata[ra++]=0x08;
-    sdata[ra++]=seq&0xFF; seq++;
-    sdata[ra++]=0;
-    sdata[ra++]=0;
-    sdata[ra++]=0;
+    jump_pkt.begin_sync = 0x7C;
+    jump_pkt.datalen = 0;
+    jump_pkt.invdatalen = ~0;
+    jump_pkt.type = branch_cmd;
+    jump_pkt.passfail = 0;
+    jump_pkt.addr = firstaddr;
+    jump_pkt.end_sync = 0x7D;
 
-    sdata[ra++]=(firstaddr>>24)&0xFF;
-    sdata[ra++]=(firstaddr>>16)&0xFF;
-    sdata[ra++]=(firstaddr>> 8)&0xFF;
-    sdata[ra++]=(firstaddr>> 0)&0xFF;
-    //
-    sdata[ra++]=0x7D;
-    for(rd=0,rc=0;rd<ra;rd++) rc+=sdata[rd];
-    sdata[ra++]=(~rc)&0xFF;
+    for(rd=0,cksum=0;rd<ra;rd++) cksum+=sdata[rd];
+    jump_pkt.cksum=(~cksum)&0xFF;
 
-    //for(rd=0;rd<ra;rd++) printf("%02X ",sdata[rd]); printf("\n");
-
-    for(rd=0,rc=0x00;rd<ra;rd++) rc+=sdata[rd];
-    rc&=0xFF;
+    //for(rd=0,cksum=0x00;rd<ra;rd++) cksum+=sdata[rd];
+    //cksum&=0xFF;
 
     ser_senddata(sdata,ra);
 
@@ -325,20 +286,4 @@ int main ( int argc, char *argv[] )
     printf("\n\n");
     return(0);
 }
-//-----------------------------------------------------------------------------
-// Copyright (C) David Welch, 2000, 2003, 2008, 2009, 2012
-//-----------------------------------------------------------------------------
-
-
-//-------------------------------------------------------------------------
-//
-// Copyright (c) 2012 David Welch dwelch@dwelch.com
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
-//-------------------------------------------------------------------------
 
