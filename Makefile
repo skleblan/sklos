@@ -1,35 +1,39 @@
 
 ARMGNU ?= arm-none-eabi
 COPS = -Wall -O2 -nostdlib -nostartfiles -ffreestanding 
+OBJDIR = obj
+SRCDIR = src
 
-all : kernel.img
+SOURCES := $(wildcard $(SRCDIR)/*.c)
+ASM_SRCS := $(wildcard $(SRCDIR)/*.s)
+OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+ASM_OBJS := $(ASM_SRCS:$(SRCDIR)/%.s=$(OBJDIR)/%.o)
 
-kernel.img : sklos.hex sklos.bin
-	cp sklos.bin kernel.img
+all : kernel.img sklos.hex
 
 clean :
-	rm -f *.o
-	rm -f *.bin
-	rm -f *.hex
-	rm -f *.elf
-	rm -f *.list
-	rm -f *.img
+	rm -f -R $(OBJDIR)
+	rm -f *.hex *.elf *.list *.img
+	rm -f prograspi
 
-vectors.o : vectors.s
-	$(ARMGNU)-as vectors.s -o vectors.o
+directories :
+	mkdir -p $(OBJDIR)
 
-.c.o :
-	$(ARMGNU)-gcc $(COPS) -c $*.c -o $@
+$(ASM_OBJS): $(OBJDIR)/%.o : $(SRCDIR)/%.s directories
+	$(ARMGNU)-as $< -o $@
 
-sklos.elf : memmap vectors.o uart.o sklmain.o util.o bootldr.o
-	$(ARMGNU)-ld $^ -T memmap -o sklos.elf
+$(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c directories
+	$(ARMGNU)-gcc $(COPS) -c $< -o $@
+
+sklos.elf : memmap $(OBJECTS) $(ASM_OBJS)
+	$(ARMGNU)-ld $(OBJECTS) $(ASM_OBJS) -T memmap -o sklos.elf
 	$(ARMGNU)-objdump -D sklos.elf > sklos.list
 
-sklos.bin : sklos.elf
-	$(ARMGNU)-objcopy sklos.elf -O binary sklos.bin
+kernel.img : sklos.elf
+	$(ARMGNU)-objcopy sklos.elf -O binary $@
 
 sklos.hex : sklos.elf
-	$(ARMGNU)-objcopy sklos.elf -O ihex sklos.hex
+	$(ARMGNU)-objcopy sklos.elf -O ihex $@
 
 prograspi : prograspi.c ser.c ser.h
 	gcc -O2 -Wall prograspi.c ser.c -o prograspi
