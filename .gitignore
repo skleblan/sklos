@@ -2,3 +2,7 @@
 *.hex
 *.bin
 *.elf
+*.img
+
+obj
+bin

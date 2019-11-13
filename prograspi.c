@@ -8,15 +8,16 @@ FILE *fp;
 #include "bootldr.h"
 
 //-----------------------------------------------------------------------------
-int check_packet ( void )
+int check_packet ( bootldr_pkt_t* response_pkt  )
 {
     unsigned int ra;
     unsigned int rb;
     unsigned int rc;
 
+    bootldr_pkt_t data = *response_pkt;
 
-    if(rdata[0]!=0x7C) return(2);
-    if(rdata[1]!=(~rdata[2]&0xFF)) return(2);
+    if(data.begin_sync!=0x7C) return(2);
+    if(data.datalen!=(~ data.invdatalen & 0xFF)) return(2);
     if(rdata[3]!=sdata[3]) return(2);
     if(rdata[4]!=sdata[4]) return(2);
     if(rdata[3+rdata[1]]!=0x7D) return(2);
@@ -31,9 +32,7 @@ int check_packet ( void )
 int raspload ( unsigned int addr, unsigned int data )
 {
     unsigned int ra;
-    unsigned int rb;
     unsigned int rc;
-    unsigned int rd;
     bootldr_pkt_t datapkt;
     char* sdata = (char*)&datapkt;
 
@@ -48,29 +47,37 @@ int raspload ( unsigned int addr, unsigned int data )
     datapkt.data = data;
     datapkt.end_sync = 0x7D;
 
-    for(rd=0,rc=0;rd<;rd++) rc+=sdata[rd];
+    rc = 0;
+    //sum up all the bytes
+    for(ra=0; ra < 0xF-0x1; ra++) rc+=sdata[ra];
+
+    //calculate the checksum using the previous sum
     datapkt.cksum = (~rc)&0xFF;
 
-    ser_senddata(sdata,ra);
-    rb=0;
-    rc=0;
+    //send data
+    ser_senddata(sdata, 0xF);
+    ra=0;
     while(1)
     {
-        rb=ser_copystring(rdata);
-        //if(rb!=rc) printf("%u\n",rb);
-        rc=rb;
-        if(rb==10)
+        //read data from serial port. returns num chars written
+        ra = ser_copystring(rdata);
+
+	//wait until we've received 10 chars
+        if(ra==10)
         {
-            //for(ra=0;ra<rb;ra++) printf("%02X ",rdata[ra]); printf("\n");
-            ra=check_packet();
-            if(ra) return(1);
-            ser_dump(rc);
+            rc=check_packet();
+            if(rc) return(1);
+	    //free up a certain number of chars in serial buffer
+            ser_dump(ra);
             break;
         }
     }
     return(0);
 }
 //-----------------------------------------------------------------------------
+//Reads file line by line
+//Sends each line to the serial port
+//
 int readhex ( FILE *fp )
 {
     char gstring[80];
@@ -239,7 +246,9 @@ int main ( int argc, char *argv[] )
 
     seq=17;
     firstaddr=0xFFFFFFFF;
-    if(readhex(fp))
+
+    //Open File. Read Data. Send to Serial Port
+    if( readhex(fp) )
     {
         return(1);
     }
