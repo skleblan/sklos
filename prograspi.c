@@ -90,36 +90,33 @@ int readhex ( FILE *fp )
     unsigned int addhigh;
     unsigned int add;
     unsigned int data;
-
-    unsigned int ra;
-
     unsigned int line;
-
     unsigned char checksum;
-
     unsigned int len;
     unsigned int maxadd;
 
-    unsigned char t;
-
     maxadd=0;
-
     addhigh=0;
 
     line=0;
+    //process each line of the intel hex file
     while(fgets(newline,sizeof(newline)-1,fp))
     {
         line++;
-        //printf("%s",newline);
         if(newline[0]!=':')
         {
             printf("Syntax error <%u> no colon\n",line);
             continue;
         }
+
+	//parse the length of the data
         gstring[0]=newline[1];
         gstring[1]=newline[2];
         gstring[2]=0;
         len=strtoul(gstring,NULL,16);
+
+	//parse all characters from "newline" into an array
+	//of numberical values in "hexline"
         for(ra=0;ra<(len+5);ra++)
         {
             gstring[0]=newline[(ra<<1)+1];
@@ -127,16 +124,21 @@ int readhex ( FILE *fp )
             gstring[2]=0;
             hexline[ra]=(unsigned char)strtoul(gstring,NULL,16);
         }
+
+	//validate the checksum. (someone else made it)
         checksum=0;
         for(ra=0;ra<(len+5);ra++) checksum+=hexline[ra];
-        //checksum&=0xFF;
         if(checksum)
         {
             printf("checksum error <%u>\n",line);
         }
+
+	//extract the address
         add=hexline[1]; add<<=8;
         add|=hexline[2];
         add|=addhigh;
+
+	//validate the address
         if(add>RAMMASK)
         {
             printf("address too big 0x%08X\n",add);
@@ -166,7 +168,10 @@ int readhex ( FILE *fp )
             default:
                 printf("UNKNOWN type %02X <%u>\n",t,line);
                 break;
+
+	    //data type
             case 0x00:
+		//re-validate the address every 4 bytes
                 for(ra=0;ra<len;ra+=4)
                 {
                     if(add>RAMMASK)
@@ -174,11 +179,14 @@ int readhex ( FILE *fp )
                         printf("address too big 0x%08X\n",add);
                         break;
                     }
+
+		    //send the data 2 bytes at a time
                     data=           hexline[ra+4+1];
                     data<<=8; data|=hexline[ra+4+0];
                     if(raspload(add,data)) return(1);
                     add+=2;
 
+		    //send the next 2 bytes of data
                     data=           hexline[ra+4+3];
                     data<<=8; data|=hexline[ra+4+2];
                     if(raspload(add,data)) return(1);
@@ -186,15 +194,19 @@ int readhex ( FILE *fp )
                     if(add>maxadd) maxadd=add;
                 }
                 break;
+
+	    // End-of-file
             case 0x01:
-//                printf("End of data\n");
                 break;
+
+	    //allows you to specify a higher address
             case 0x02:
                 addhigh=hexline[5];
                 addhigh<<=8;
                 addhigh|=hexline[4];
                 addhigh<<=16;
                 break;
+
             case 0x03:
                     data=           hexline[4+0];
                     data<<=8; data|=hexline[4+1];
@@ -205,15 +217,7 @@ int readhex ( FILE *fp )
         }
     }
 
-    //printf("%u lines processed\n",line);
-    //printf("%08X\n",maxadd);
-    //for(ra=0;ra<maxadd;ra+=4)
-    //{
-        //printf("0x%08X: 0x%08X\n",ra,ram[ra>>2]);
-    //}
     return(0);
-
-
 }
 
 //-----------------------------------------------------------------------------
